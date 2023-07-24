@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Management</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>User Management</h1>
+
+    <form id="userForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" required><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" required><br>
+
+        <button type="submit">Create User</button>
+    </form>
+
+    <table id="userTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        // Function to fetch and display all users
+        function fetchUsers() {
+            $.ajax({
+                url: '/users',
+                type: 'GET',
+                success: function(users) {
+                    var tableBody = $('#userTable tbody');
+                    tableBody.empty();
+
+                    users.forEach(function(user) {
+                        var row = `<tr>
+                            <td>${user.id}</td>
+                            <td>${user.name}</td>
+                            <td>${user.email}</td>
+                            <td>
+                                <button onclick="editUser(${user.id})">Edit</button>
+                                <button onclick="deleteUser(${user.id})">Delete</button>
+                            </td>
+                        </tr>`;
+                        tableBody.append(row);
+                    });
+                }
+            });
+        }
+
+        // Function to create a new user
+        $('#userForm').submit(function(event) {
+            event.preventDefault();
+
+            var name = $('#name').val();
+            var email = $('#email').val();
+
+            $.ajax({
+                url: '/users',
+                type: 'POST',
+                data: JSON.stringify({ name: name, email: email }),
+                contentType: 'application/json',
+                success: function(response) {
+                    fetchUsers();
+                    $('#name').val('');
+                    $('#email').val('');
+                }
+            });
+        });
+
+        // Function to delete a user
+        function deleteUser(userId) {
+            $.ajax({
+                url: `/users/${userId}`,
+                type: 'DELETE',
+                success: function(response) {
+                    fetchUsers();
+                }
+            });
+        }
+
+        // Function to edit a user
+        function editUser(userId) {
+            // Implement your edit logic here
+            console.log(`Editing user with ID: ${userId}`);
+        }
+
+        // Fetch users on page load
+        fetchUsers();
+    </script>
+</body>
+</html>
